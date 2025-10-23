@@ -1,0 +1,73 @@
+﻿@page "/support-list"
+@rendermode InteractiveServer
+@using CosmoooDB.Models
+@inject CosmoooDB.Services.CosmosService CosmosService
+@inject NavigationManager Nav
+
+
+<h3 class="fw-bold mb-4">Supporthenvendelser</h3>
+
+@if (messages == null)
+{
+    <div class="alert alert-info">Indlæser data...</div>
+}
+else if (messages.Count == 0)
+{
+    <div class="alert alert-warning">Ingen henvendelser fundet.</div>
+}
+else
+{
+    <table class="table table-striped table-hover shadow-sm">
+        <thead class="table-light">
+            <tr>
+                <th>Navn</th>
+                <th>Email</th>
+                <th>Telefon</th>
+                <th>Kategori</th>
+                <th>Besked</th>
+                <th>Dato</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var msg in messages)
+            {
+                <tr>
+                    <td>@msg.CustomerName</td>
+                    <td>@msg.Email</td>
+                    <td>@msg.Phone</td>
+                    <td>@msg.Category</td>
+                    <td>@msg.Message</td>
+                    <td>@msg.CreatedAt.ToLocalTime().ToString("dd-MM-yyyy HH:mm")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<div class="mt-4">
+    <button class="btn btn-primary" @onclick="GoToCreate">
+        <i class="bi bi-plus-circle me-1"></i> Opret ny henvendelse
+    </button>
+</div>
+
+@code {
+    private List<SupportMessage>? messages;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            messages = await CosmosService.GetAllMessagesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fejl ved hentning af data: {ex.Message}");
+            messages = new();
+        }
+    }
+
+    private void GoToCreate()
+    {
+        Nav.NavigateTo("/create-support");
+    }
+}

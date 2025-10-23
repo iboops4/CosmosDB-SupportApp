@@ -1,0 +1,82 @@
+﻿@page "/create-support"
+@rendermode InteractiveServer
+@using CosmoooDB.Models
+@inject CosmoooDB.Services.CosmosService CosmosService
+@inject NavigationManager Nav
+
+
+
+<h3 class="mb-3 fw-bold">Opret ny supporthenvendelse</h3>
+
+<div class="card shadow p-4" style="max-width:600px">
+    <EditForm Model="@message" OnValidSubmit="@HandleSubmit" FormName="SupportForm" method="post">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label class="form-label">Navn</label>
+            <InputText class="form-control" @bind-Value="message.CustomerName" />
+            <ValidationMessage For="@(() => message.CustomerName)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <InputText class="form-control" @bind-Value="message.Email" />
+            <ValidationMessage For="@(() => message.Email)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Telefon</label>
+            <InputText class="form-control" @bind-Value="message.Phone" />
+            <ValidationMessage For="@(() => message.Phone)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Kategori</label>
+            <InputSelect class="form-select" @bind-Value="message.Category">
+                <option value="">-- Vælg kategori --</option>
+                <option value="teknisk">Teknisk spørgsmål</option>
+                <option value="salg">Salg</option>
+                <option value="reservedele">Reservedele</option>
+                <option value="service">Service</option>
+                <option value="andet">Andet</option>
+            </InputSelect>
+            <ValidationMessage For="@(() => message.Category)" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Besked</label>
+            <InputTextArea class="form-control" rows="4" @bind-Value="message.Message" />
+            <ValidationMessage For="@(() => message.Message)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Opret henvendelse</button>
+    </EditForm>
+
+    @if (success)
+    {
+        <div class="alert alert-success mt-3">
+            ✅ Din henvendelse er sendt!
+        </div>
+    }
+</div>
+
+@code {
+    private SupportMessage message = new();
+    private bool success = false;
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            await CosmosService.AddSupportMessageAsync(message);
+            success = true;
+            message = new(); // nulstil formular
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Fejl ved indsættelse: {ex.Message}");
+        }
+    }
+}
